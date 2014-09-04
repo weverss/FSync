@@ -1,4 +1,4 @@
 FSync
 =====
 
-Synchronization plugin for Sublime Text 3
+Sublime Text 3 plugin for file synchronization between workspaces
