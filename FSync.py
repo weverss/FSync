@@ -20,19 +20,18 @@ class FSync(sublime_plugin.EventListener):
 
     # User local and remote workspaces definition. The files and directories are
     # copied only from local to remote location.
-    local_workspace = '/home/user/local_workspace'
-    remote_workspace = '/mnt/remote_workspace'
+    local_workspace = '/home/wevers/workspace'
+    remote_workspace = '/mnt/dev_desenvolvedores/51'
 
     # Last synchronization time between locations. Used to determine whether the
     # files needs to be synchronized or not.
     last_sync_time = 0
 
     # File extensions ignored during sync.
-    ignored_file_extensions = ['.svn-base', 'wc.db']
+    ignored_file_extensions = ['.FSync', '.svn-base', 'wc.db']
 
 
     def on_post_save_async(self, view):
-
         """
         Method asynchronously called by Sublime Text on user save actions.
         """
@@ -40,25 +39,24 @@ class FSync(sublime_plugin.EventListener):
         self.run_pre_sync()
         self.sync()
 
-    def run_pre_sync(self):
 
+    def run_pre_sync(self):
         """
         Use file to determine tha last sync time.
         """
 
-        if os.path.isfile(self.remote_workspace + '/.FSync'):
+        if os.path.isfile(self.local_workspace + '/.FSync'):
 
             # Read file properties to get last sync time.
-            self.last_sync_time = time.gmtime(
-                os.path.getmtime(self.remote_workspace + '/.FSync')
+            self.last_sync_time = os.path.getmtime(
+                self.local_workspace + '/.FSync'
             )
 
         # Touch file for the next operation reference.
-        open(self.remote_workspace + '/.FSync', 'w').close()
+        open(self.local_workspace + '/.FSync', 'w').close()
 
 
     def sync(self):
-
         """
         Perform synchronization between locations. The first operation will not
         check for modified files. Instead, it will copy all files and directories
@@ -92,7 +90,6 @@ class FSync(sublime_plugin.EventListener):
 
 
     def get_changed_files(self):
-
         """
         Return modified files since last synchronization.
         """
@@ -102,12 +99,9 @@ class FSync(sublime_plugin.EventListener):
         for top, directories, files in os.walk(self.local_workspace):
             for file in files:
 
-                # Set path to file.
+                # Set file path and modification time.
                 file_path = os.path.join(top, file)
-
-                file_modification_time = time.gmtime(
-                    os.path.getmtime(file_path)
-                )
+                file_modification_time = os.path.getmtime(file_path)
 
                 # Skip not modified files.
                 if file_modification_time < self.last_sync_time:
@@ -123,10 +117,9 @@ class FSync(sublime_plugin.EventListener):
                 })
 
         return changed_files
-
+        
 
     def ignore_file(self, file_path):
-
         """ 
         Determine whether ignore a file or not based on its extension.
         """
