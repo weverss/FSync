@@ -1,35 +1,34 @@
-# Sync plugin for Sublime Text 3. Provides one-way synchronization between local
-# and remote workspaces.
-#
-# https://github.com/weverss/FSync
-
-
 import os
 import time
 import shutil
 import sublime
 import sublime_plugin
 
+"""
+Sync plugin for Sublime Text 3. Provides one-way synchronization between local
+and remote workspaces.
+
+https://github.com/weverss/FSync
+"""
+
 
 class FSync(sublime_plugin.EventListener):
-
     """
     Class extends Sublime event listener to start synchronization triggered
     by user save actions.
     """
 
-    # User local and remote workspaces definition. The files and directories are
-    # copied only from local to remote location.
+    # User local and remote workspaces definition. The files and
+    # directories are copied only from local to remote location.
     local_workspace = '/home/wevers/workspace'
     remote_workspace = '/mnt/dev_desenvolvedores/51'
 
-    # Last synchronization time between locations. Used to determine whether the
-    # files needs to be synchronized or not.
+    # Last synchronization time between locations. Used to determine
+    # whether the files needs to be synchronized or not.
     last_sync_time = 0
 
     # File extensions ignored during sync.
     ignored_file_extensions = ['.FSync', '.svn-base', 'wc.db']
-
 
     def on_post_save_async(self, view):
         """
@@ -38,7 +37,6 @@ class FSync(sublime_plugin.EventListener):
 
         self.run_pre_sync()
         self.sync()
-
 
     def run_pre_sync(self):
         """
@@ -55,12 +53,11 @@ class FSync(sublime_plugin.EventListener):
         # Touch file for the next operation reference.
         open(self.local_workspace + '/.FSync', 'w').close()
 
-
     def sync(self):
         """
         Perform synchronization between locations. The first operation will not
-        check for modified files. Instead, it will copy all files and directories
-        on the remote workspace.
+        check for modified files. Instead, it will copy all files and
+        directories on the remote workspace.
         """
 
         # Get changed files.
@@ -79,7 +76,7 @@ class FSync(sublime_plugin.EventListener):
 
             # Create folders on the remote location, in case they don't
             # exist.
-            if os.path.isdir(remote_file_directory) == False:
+            if os.path.isdir(remote_file_directory) is False:
                 os.makedirs(remote_file_directory)
 
             # Perform copy.
@@ -87,7 +84,6 @@ class FSync(sublime_plugin.EventListener):
             print("+ " + local_file['file_path'])
 
         print('Files synchronized.')
-
 
     def get_changed_files(self):
         """
@@ -117,10 +113,9 @@ class FSync(sublime_plugin.EventListener):
                 })
 
         return changed_files
-        
 
     def ignore_file(self, file_path):
-        """ 
+        """
         Determine whether ignore a file or not based on its extension.
         """
 
