@@ -16,10 +16,6 @@ class FSync(sublime_plugin.EventListener):
     by user save actions.
     """
 
-    # Initializing remote and local directories.
-    local_workspace = ''
-    remote_workspace = ''
-
     # Last synchronization time between locations. Used to determine
     # whether the files needs to be synchronized or not.
     last_sync_time = 0
@@ -27,21 +23,20 @@ class FSync(sublime_plugin.EventListener):
     # File extensions ignored during sync.
     ignored_file_extensions = ['.FSync', '.svn-base', 'wc.db']
 
-    def __init__(self, *args, **kargs):
-        super(FSync, self).__init__(*args, **kargs)
-        self.settings = sublime.load_settings('FSync.sublime-settings')
-
-        self.local_workspace = self.settings.get('local_workspace')
-        self.remote_workspace = self.settings.get('remote_workspace')
-
-        if self.local_workspace is None or self.remote_workspace is None:
-            print('Fsync WARNING: Please, fill \'local_workspace\' and'
-                  ' \'remote_workspace\' in settings.')
-
     def on_post_save_async(self, view):
         """
         Method asynchronously called by Sublime Text on user save actions.
         """
+
+        self.settings = sublime.load_settings('FSync.sublime-settings')
+        self.local_workspace = self.settings.get('local_workspace')
+        self.remote_workspace = self.settings.get('remote_workspace')
+
+        if self.local_workspace is None or self.remote_workspace is None:
+            print(
+                'FSync WARNING: Please, fill \'local_workspace\' and'
+                ' \'remote_workspace\' at user settings.'
+            )
 
         self.run_pre_sync()
         self.sync()
