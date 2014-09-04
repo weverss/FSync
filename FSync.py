@@ -1,106 +1,138 @@
+# Sync plugin for Sublime Text 3. Provides one-way synchronization between local
+# and remote workspaces.
+#
+# https://github.com/weverss/FSync
+
+
 import os
 import time
 import shutil
 import sublime
 import sublime_plugin
 
-#################################################################
-# Classe / plugin para sicronização entre ambientes de trabalho #
-#################################################################
-class FSync( sublime_plugin.EventListener ) :
 
-	# Ambiente de trabalho local
-	local_workspace = "/home/wevers/workspace"
+class FSync(sublime_plugin.EventListener):
 
-	# Ambiente de trabalho remoto
-	remote_workspace = "/mnt/dev_desenvolvedores/51"
+    """
+    Class extends Sublime event listener to start synchronization triggered
+    by user save actions.
+    """
 
-	# Última data de sincronização entre os ambiente
-	last_sync_time = 0
+    # User local and remote workspaces definition. The files and directories are
+    # copied only from local to remote location.
+    local_workspace = '/home/user/local_workspace'
+    remote_workspace = '/mnt/remote_workspace'
 
-	# Extensões ignoradas
-	ignored_file_extensions = [ ".svn-base" , "wc.db" ]
+    # Last synchronization time between locations. Used to determine whether the
+    # files needs to be synchronized or not.
+    last_sync_time = 0
 
-	########################################################################
-	# Método executado pelo Sublime, de maneira assícrona, a cada "Ctrl+S" #
-	########################################################################
-	def on_post_save_async( self , view ) :
-		self.run_pre_sync()
-		self.sync()
+    # File extensions ignored during sync.
+    ignored_file_extensions = ['.svn-base', 'wc.db']
 
-	############################################################
-	# Atualiza data de sicronização no arquivo de configuração #
-	############################################################
-	def run_pre_sync( self ) :
-		if os.path.isfile( self.remote_workspace + "/.folhasync" ) :
-			# Obtém última data de sincronização.
-			self.last_sync_time = time.gmtime(
-				os.path.getmtime( self.remote_workspace + "/.folhasync" )
-			)
 
-		open( self.remote_workspace + "/.folhasync" , "w" ).close()
+    def on_post_save_async(self, view):
 
-	########################
-	# Sincroniza ambientes #
-	########################
-	def sync( self ) :
-		changed_files = self.get_changed_files()
+        """
+        Method asynchronously called by Sublime Text on user save actions.
+        """
 
-		if not changed_files :
-			return
-		
-		print( "Sincronizando workspaces:" )
-		for local_file in changed_files :
-			
-			remote_file_directory = local_file["directory_path"].replace(
-				self.local_workspace ,
-				self.remote_workspace
-			)
+        self.run_pre_sync()
+        self.sync()
 
-			# Cria diretórios no ambiente remoto, caso não existam.
-			if os.path.isdir( remote_file_directory ) == False :
-				os.makedirs( remote_file_directory )
-				
-			# Sincroniza arquivos entre os ambientes.
-			shutil.copy( local_file["file_path"] , remote_file_directory )
-			print( "+ " + local_file["file_path"] )		
-		print( "Sincronizado." )
+    def run_pre_sync(self):
 
-	#############################################################
-	# Retorna arquivos modificados deste a última sincronização #
-	#############################################################
-	def get_changed_files( self ) :
-		changed_files = []
+        """
+        Use file to determine tha last sync time.
+        """
 
-		for top , directories , files in os.walk( self.local_workspace ) :		
-			for file in files :
-				# Monta caminho para o arquivo.
-				file_path = os.path.join( top , file )
-				
-				file_modification_time = time.gmtime(
-					os.path.getmtime( file_path )
-				)
-				
-				# Arquivos não modificados após última sincronização.
-				if file_modification_time < self.last_sync_time :
-					continue
+        if os.path.isfile(self.remote_workspace + '/.FSync'):
 
-				if self.ignore_file( file_path ) :
-					continue
+            # Read file properties to get last sync time.
+            self.last_sync_time = time.gmtime(
+                os.path.getmtime(self.remote_workspace + '/.FSync')
+            )
 
-				changed_files.append( {
-					"directory_path" : top ,
-					"file_path" : file_path
-				} )
+        # Touch file for the next operation reference.
+        open(self.remote_workspace + '/.FSync', 'w').close()
 
-		return changed_files
 
-	#######################################################
-	# Ignora sincronização de arquivo baseado na extensão #
-	#######################################################
-	def ignore_file( self , file_path ) :
-		for ignored_file_extension in self.ignored_file_extensions :
-			if file_path.endswith( ignored_file_extension ) :
-				return True
+    def sync(self):
 
-		return False
+        """
+        Perform synchronization between locations. The first operation will not
+        check for modified files. Instead, it will copy all files and directories
+        on the remote workspace.
+        """
+
+        # Get changed files.
+        changed_files = self.get_changed_files()
+
+        if not changed_files:
+            return
+
+        print('Synchronizing files:')
+        for local_file in changed_files:
+
+            remote_file_directory = local_file['directory_path'].replace(
+                self.local_workspace,
+                self.remote_workspace
+            )
+
+            # Create folders on the remote location, in case they don't
+            # exist.
+            if os.path.isdir(remote_file_directory) == False:
+                os.makedirs(remote_file_directory)
+
+            # Perform copy.
+            shutil.copy(local_file['file_path'], remote_file_directory)
+            print("+ " + local_file['file_path'])
+
+        print('Files synchronized.')
+
+
+    def get_changed_files(self):
+
+        """
+        Return modified files since last synchronization.
+        """
+
+        changed_files = []
+
+        for top, directories, files in os.walk(self.local_workspace):
+            for file in files:
+
+                # Set path to file.
+                file_path = os.path.join(top, file)
+
+                file_modification_time = time.gmtime(
+                    os.path.getmtime(file_path)
+                )
+
+                # Skip not modified files.
+                if file_modification_time < self.last_sync_time:
+                    continue
+
+                # Ignore some files based on its extension.
+                if self.ignore_file(file_path):
+                    continue
+
+                changed_files.append({
+                    'directory_path': top,
+                    'file_path': file_path
+                })
+
+        return changed_files
+
+
+    def ignore_file(self, file_path):
+
+        """ 
+        Determine whether ignore a file or not based on its extension.
+        """
+
+        for ignored_file_extension in self.ignored_file_extensions:
+            if file_path.endswith(ignored_file_extension):
+                return True
+
+        return False
