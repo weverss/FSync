@@ -16,6 +16,10 @@ class FSync(sublime_plugin.EventListener):
     by user save actions.
     """
 
+    # Initializing remote and local directories.
+    local_workspace = ''
+    remote_workspace = ''
+
     # Last synchronization time between locations. Used to determine
     # whether the files needs to be synchronized or not.
     last_sync_time = 0
