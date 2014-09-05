@@ -29,7 +29,6 @@ class FSync(sublime_plugin.EventListener):
         self.settings = sublime.load_settings('FSync.sublime-settings')
         self.local_workspace = self.settings.get('local_workspace')
         self.remote_workspace = self.settings.get('remote_workspace')
-
         self.ignore_extensions = self.settings.get('ignore_extensions', [])
 
         if self.local_workspace is None or self.remote_workspace is None:
@@ -37,6 +36,7 @@ class FSync(sublime_plugin.EventListener):
                 'FSync WARNING: Please, fill \'local_workspace\' and'
                 ' \'remote_workspace\' at user settings.'
             )
+            return
 
         self.run_pre_sync()
         self.sync()
