@@ -26,6 +26,7 @@ class FSync(sublime_plugin.EventListener):
         Method asynchronously called by Sublime Text on user save actions.
         """
 
+        # Load settings
         self.settings = sublime.load_settings('FSync.sublime-settings')
         self.local_workspace = self.settings.get('local_workspace')
         self.remote_workspace = self.settings.get('remote_workspace')
