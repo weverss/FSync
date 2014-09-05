@@ -16,7 +16,7 @@ With **Package Control**, add repository below (Preferences > Package Control > 
 https://github.com/weverss/FSync
 </pre>
 
-*If you don't have **Package Controll** installed, see [this link](https://sublime.wbond.net/installation) to install it.*
+*If you don't have Package Controll installed, see [this link](https://sublime.wbond.net/installation) to install it.*
 
 
 With a hosted ZIP
