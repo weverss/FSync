@@ -1,11 +1,14 @@
 {
 	// Config example:
 
+	// File extensions list to ignore during sync
+	"ignore_extensions": [".FSync", ".svn-base", "wc.db"] ,
+
 	// WARNING: In both settings below, don't finish directories with '/'
 
 	// Local directory to work...
-	// "local_workspace": "/home/my_user/workspace" , // Don't finish with '/'
+	// "local_workspace": "/home/my_user/workspace" , // Don't finish it with '/'
 
 	// Remote directory to sync files from local directory ('local_workspace' setting above)
-	// "remote_workspace": "/mnt/my_remote_directory/" // Don't finish with '/'
+	// "remote_workspace": "/mnt/my_remote_directory" // Don't finish it with '/'
 }

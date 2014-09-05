@@ -13,15 +13,13 @@ https://github.com/weverss/FSync
 class FSync(sublime_plugin.EventListener):
     """
     Class extends Sublime event listener to start synchronization triggered
+
     by user save actions.
     """
 
     # Last synchronization time between locations. Used to determine
     # whether the files needs to be synchronized or not.
     last_sync_time = 0
-
-    # File extensions ignored during sync.
-    ignored_file_extensions = ['.FSync', '.svn-base', 'wc.db']
 
     def on_post_save_async(self, view):
         """
@@ -31,6 +29,8 @@ class FSync(sublime_plugin.EventListener):
         self.settings = sublime.load_settings('FSync.sublime-settings')
         self.local_workspace = self.settings.get('local_workspace')
         self.remote_workspace = self.settings.get('remote_workspace')
+
+        self.ignore_extensions = self.settings.get('ignore_extensions', [])
 
         if self.local_workspace is None or self.remote_workspace is None:
             print(
@@ -122,7 +122,7 @@ class FSync(sublime_plugin.EventListener):
         Determine whether ignore a file or not based on its extension.
         """
 
-        for ignored_file_extension in self.ignored_file_extensions:
+        for ignored_file_extension in self.ignore_extensions:
             if file_path.endswith(ignored_file_extension):
                 return True
 
