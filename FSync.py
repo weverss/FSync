@@ -13,7 +13,6 @@ https://github.com/weverss/FSync
 class FSync(sublime_plugin.EventListener):
     """
     Class extends Sublime event listener to start synchronization triggered
-
     by user save actions.
     """
 
@@ -27,15 +26,15 @@ class FSync(sublime_plugin.EventListener):
         """
 
         # Load settings
-        self.settings = sublime.load_settings('FSync.sublime-settings')
-        self.local_workspace = self.settings.get('local_workspace')
-        self.remote_workspace = self.settings.get('remote_workspace')
-        self.ignore_extensions = self.settings.get('ignore_extensions', [])
+        self.settings = sublime.load_settings("FSync.sublime-settings")
+        self.local_workspace = self.settings.get("local_workspace")
+        self.remote_workspace = self.settings.get("remote_workspace")
+        self.ignore_extensions = self.settings.get("ignore_extensions", [])
 
         if self.local_workspace is None or self.remote_workspace is None:
             print(
-                'FSync WARNING: Please, fill \'local_workspace\' and'
-                ' \'remote_workspace\' at user settings.'
+                "FSync WARNING: Please, fill 'local_workspace' and"
+                " 'remote_workspace' at user settings."
             )
             return
 
@@ -47,15 +46,15 @@ class FSync(sublime_plugin.EventListener):
         Use file to determine tha last sync time.
         """
 
-        if os.path.isfile(self.local_workspace + '/.FSync'):
+        # Reference file with last sync time
+        fsync_file = os.path.join(self.local_workspace, ".FSync")
 
-            # Read file properties to get last sync time.
-            self.last_sync_time = os.path.getmtime(
-                self.local_workspace + '/.FSync'
-            )
+        # Read file properties to get last sync time.
+        if os.path.isfile(fsync_file):
+            self.last_sync_time = os.path.getmtime(fsync_file)
 
         # Touch file for the next operation reference.
-        open(self.local_workspace + '/.FSync', 'w').close()
+        open(fsync_file, "w").close()
 
     def sync(self):
         """
@@ -70,10 +69,10 @@ class FSync(sublime_plugin.EventListener):
         if not changed_files:
             return
 
-        print('Synchronizing files:')
+        print("Synchronizing files:")
         for local_file in changed_files:
 
-            remote_file_directory = local_file['directory_path'].replace(
+            remote_file_directory = local_file["directory_path"].replace(
                 self.local_workspace,
                 self.remote_workspace
             )
@@ -84,10 +83,10 @@ class FSync(sublime_plugin.EventListener):
                 os.makedirs(remote_file_directory)
 
             # Perform copy.
-            shutil.copy(local_file['file_path'], remote_file_directory)
-            print("+ " + local_file['file_path'])
+            shutil.copy(local_file["file_path"], remote_file_directory)
+            print("+ " + local_file["file_path"])
 
-        print('Files synchronized.')
+        print("Files synchronized.")
 
     def get_changed_files(self):
         """
@@ -112,8 +111,8 @@ class FSync(sublime_plugin.EventListener):
                     continue
 
                 changed_files.append({
-                    'directory_path': top,
-                    'file_path': file_path
+                    "directory_path": top,
+                    "file_path": file_path
                 })
 
         return changed_files
